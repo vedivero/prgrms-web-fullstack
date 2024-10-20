@@ -1,3 +1,5 @@
+# 2024.10.22 / week 10 / part.02
+
 ## break, continue
 
 1. break문

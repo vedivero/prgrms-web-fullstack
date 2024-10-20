@@ -1,3 +1,5 @@
+# 2024.10.22 / week 10 / part.02
+
 ## thorw, error객체
 
 ### throw문
