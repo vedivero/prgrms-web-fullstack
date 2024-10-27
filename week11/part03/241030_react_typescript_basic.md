@@ -81,10 +81,12 @@
     - `root`를 누가 access 하는가?
 
     - id값이 root인 영역에
-    ![alt text](image-1.png)
+      
+        ![alt text](image-1.png)
 
     - App 컴포넌트를 랜더링 하는 원리
-    ![alt text](image-2.png)
+      
+        ![alt text](image-2.png)
 
     - App.jsx
 
