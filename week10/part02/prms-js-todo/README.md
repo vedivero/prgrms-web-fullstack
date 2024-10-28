@@ -57,6 +57,7 @@ Action
 ### usecase2) 가계부 내역을 입력할 수 있다.
 
 ![add-item](./docs/add-item.png)
+
 ![add-item-detail](./docs/add-item-detail.png)
 
 UI
