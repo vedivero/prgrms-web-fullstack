@@ -13,14 +13,14 @@ export const vars = createGlobalTheme(':root', {
       dartText: 'rgb(24,42,77)',
       secondaryDarkText: 'rgb(94,108,132)',
       secondaryDarkTextHover: 'rgb(218,219,226)',
-      selectedTap: 'rgb(137,176,174)',
+      selectedTab: 'rgb(137,176,174)',
       updateButton: 'rgb(237,180,88)',
       deleteButton: 'rgb(237,51,88)',
    },
    fontSizing: {
       T1: '32px',
       T2: '24px',
-      ТЗ: '18px',
+      T3: '18px',
       T4: '14px',
       P1: '12px',
    },
@@ -44,8 +44,10 @@ export const vars = createGlobalTheme(':root', {
 
 export const appContainer = style({
    display: 'flex',
-   flexDirection: 'row',
-   height: '100%',
+   flexDirection: 'column',
+   minHeight: '100vh',
+   height: 'max-content',
+   width: '100vw',
 });
 
 export const board = style({
