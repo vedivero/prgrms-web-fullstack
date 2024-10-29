@@ -8,6 +8,7 @@ import { deleteList, setModalActive } from '../../store/slices/boardsSlice';
 import { addLog } from '../../store/slices/loggerSlice';
 import { v4 as uuidv4 } from 'uuid';
 import { setModalData } from '../../store/slices/modalSlice';
+import { deleteButton, header, listWrapper, name } from './List.css';
 
 type TListPorps = {
    boardId: string;
@@ -34,23 +35,25 @@ const List: FC<TListPorps> = ({ list, boardId }) => {
       dispatch(setModalActive(true));
    };
    return (
-      <div>
-         <div>
-            <div>{list.listName}</div>
-            <GrSubtract onClick={() => handleListDelete(list.listId)} />
+      <div className={listWrapper}>
+         <div className={header}>
+            <div className={name}>{list.listName}</div>
+            <div className={deleteButton} onClick={() => handleListDelete(list.listId)}>
+               삭제
+            </div>
          </div>
-         {list.tasks.map((task, index) => {
+         {list.tasks.map((task, index) => (
             <div key={task.taskId} onClick={() => handleTaskChange(boardId, list.listId, task.taskId, task)}>
                <Task
-                  taskname={task.taskname}
+                  taskName={task.taskName}
                   taskDescription={task.taskDescription}
                   boardId={boardId}
                   id={task.taskId}
                   index={index}
                />
-            </div>;
-            <ActionButton />;
-         })}
+            </div>
+         ))}
+         <ActionButton boardId={boardId} listId={list.listId} />
       </div>
    );
 };
