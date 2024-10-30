@@ -1,16 +1,28 @@
 import { style } from '@vanilla-extract/css';
 import { vars } from '../../App.css';
 
+// export const container = style({
+//    display: 'flex',
+//    flexDirection: 'row',
+//    alignItems: 'center',
+//    flexWrap: 'wrap',
+//    rowGap: 15,
+//    minHeight: 'max-content',
+//    padding: vars.spacing.big2,
+//    backgroundColor: vars.color.mainDarker,
+// });
 export const container = style({
    display: 'flex',
    flexDirection: 'row',
-   alignItems: 'center',
-   flexWrap: 'wrap',
-   rowGap: 15,
-   minHeight: 'max-content',
+   justifyContent: 'flex-start', // 왼쪽 정렬
+   alignItems: 'flex-start', // 상단 정렬
+   gap: vars.spacing.listSpacing, // 리스트 간 간격 유지
    padding: vars.spacing.big2,
    backgroundColor: vars.color.mainDarker,
+   overflowX: 'auto', // 스크롤 가능
+   height: '100%', // 컨테이너가 꽉 차도록 설정
 });
+
 export const title = style({
    color: vars.color.brightText,
    fontSize: vars.fontSizing.T2,
