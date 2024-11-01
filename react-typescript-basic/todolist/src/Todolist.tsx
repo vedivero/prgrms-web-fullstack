@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Button } from 'react-bootstrap';
+import TodoModal from './TodoModal';
 
 // FC = function component
 const TodoList: React.FC = () => {
@@ -91,6 +92,7 @@ const TodoList: React.FC = () => {
                </ul>
             </div>
          </div>
+         <TodoModal show={showDetail} todo={selectedTodo} handleClose={handleCloseDetail}></TodoModal>
       </div>
    );
 };
