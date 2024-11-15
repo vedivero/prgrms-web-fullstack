@@ -5,13 +5,6 @@ import Title from '../components/common/Title';
 const Home = () => {
    return (
       <>
-         <Title size='medium' color='background'>
-            제목 테스트
-         </Title>
-         <Button size='large' schema='primary' disabled={false} isLoading={false}>
-            버튼 테스트
-         </Button>
-         <InputText placeholder='여기에 입력하세요' />
          <div>Home body</div>
       </>
    );

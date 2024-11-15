@@ -5,9 +5,7 @@ import styled from 'styled-components';
 const Footer = () => {
    return (
       <FooterStyle>
-         <h1 className='logo'>
-            <img src={logo} alt='book store' />
-         </h1>
+         <h1 className='logo'>{/* <img src={logo} alt='book store' /> */}</h1>
          <div className='copyright'>
             <p>copyright(c), 2024, Book Store</p>
          </div>
@@ -22,7 +20,7 @@ const FooterStyle = styled.footer`
    border-top: 1px solid ${({ theme }) => theme.color.background};
    padding: 20px 0;
    display: flex;
-   justify-content: space-between;
+   // justify-content: space-between;
 
    .logo {
       img {
