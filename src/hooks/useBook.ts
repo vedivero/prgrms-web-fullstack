@@ -30,8 +30,9 @@ export const useBook = (bookId: string | undefined) => {
 
    const addToCart = (quantity: number) => {
       if (!book) return;
+      console.log(book.book_id);
       addCart({
-         book_id: book.id,
+         book_id: book.book_id,
          quantity,
       }).then(() => {
          setCartAdded(true);
@@ -44,8 +45,6 @@ export const useBook = (bookId: string | undefined) => {
    useEffect(() => {
       if (!bookId) return;
       fetchBook(bookId).then((book) => {
-         console.log('useEffect book - id : ', bookId);
-         console.log('useEffect book  : ', book);
          setBook(book);
       });
    }, [bookId]);

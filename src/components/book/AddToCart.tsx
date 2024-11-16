@@ -12,7 +12,7 @@ interface Props {
 
 const AddToCart = ({ book }: Props) => {
    const [quantity, setQuantity] = useState<number>(1);
-   const { addToCart, cartAdded } = useBook(book.id.toString());
+   const { addToCart, cartAdded } = useBook(book.book_id.toString());
 
    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       setQuantity(Number(e.target.value));

@@ -33,7 +33,6 @@ export const fetchBooks = async (params: FetchBooksParams) => {
 
 export const fetchBook = async (bookId: string) => {
    const response = await httpClient.get<BookDetail>(`/books/${bookId}`);
-   console.log('response fetchBook : ', response);
    return response.data;
 };
 
@@ -42,7 +41,6 @@ export const favoriteBook = async (bookId: string | undefined) => {
    if (!token) {
       throw new Error('JWT 토큰이 없습니다. 로그인하세요.');
    }
-   console.log('bookId : ', bookId);
    const response = await httpClient.post(
       `/favorite/${bookId}`,
       {},

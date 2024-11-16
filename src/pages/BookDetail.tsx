@@ -46,9 +46,7 @@ const bookInfoList = [
 
 const BookDetail = () => {
    const { bookId } = useParams();
-   console.log('BookDetail bookId : ', bookId);
    const { book, favoriteToggle } = useBook(bookId);
-   console.log('book detail :', book);
    if (!book) return null;
 
    return (

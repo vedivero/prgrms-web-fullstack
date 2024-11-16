@@ -6,6 +6,14 @@ interface AddCartParams {
 }
 
 export const addCart = async (params: AddCartParams) => {
-   const response = await httpClient.post('/carts', params);
+   const token = localStorage.getItem('token');
+   if (!token) {
+      throw new Error('JWT 토큰이 없습니다. 로그인하세요.');
+   }
+   const response = await httpClient.post('/carts', params, {
+      headers: {
+         Authorization: `${token}`,
+      },
+   });
    return response.data;
 };

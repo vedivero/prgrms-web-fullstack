@@ -6,6 +6,7 @@ import { Book } from '../../models/book.model';
 
 const dummyBook: Book = {
    id: 1,
+   book_id: 2,
    title: 'Dummy Book',
    img: 5,
    category_id: 1,

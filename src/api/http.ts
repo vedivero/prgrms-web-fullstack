@@ -6,7 +6,6 @@ const BASE_URL = 'http://localhost:5000';
 const DEFAULT_TIMEOUT = 30000;
 
 export const createClient = (config?: AxiosRequestConfig) => {
-   console.log('createClient');
    const axiosInstance = axios.create({
       baseURL: BASE_URL,
       timeout: DEFAULT_TIMEOUT,

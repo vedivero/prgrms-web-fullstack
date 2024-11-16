@@ -1,5 +1,6 @@
 export interface Book {
    id: number;
+   book_id: number;
    title: string;
    img: number;
    category_id: number;
