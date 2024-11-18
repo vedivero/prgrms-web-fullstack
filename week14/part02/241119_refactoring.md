@@ -444,14 +444,14 @@ export const fetchOrder = async (orderId: number) => {
     const onSubmit = (data: LoginProps) => {
         login(data).then(
             (res) => {
-            storeLogin(res.token);
+               storeLogin(res.token);
 
-            console.log(res.token);
-            showAlert('로그인 되었습니다.');
-            navigate('/');
+               console.log(res.token);
+               showAlert('로그인 되었습니다.');
+               navigate('/');
             },
             (error) => {
-            showAlert('로그인이 실패했습니다.');
+               showAlert('로그인이 실패했습니다.');
             },
         );
     };
