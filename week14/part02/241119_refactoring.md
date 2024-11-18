@@ -30,7 +30,8 @@
 
 - craco 설치
 - `npm i -D @craco/craco` 
-    ![alt text](image.png)
+ 
+   ![alt text](image.png)
 
 <br>
 <br>
