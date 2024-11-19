@@ -97,9 +97,11 @@ network"로 일시 정지
         - DOM에 mount하는 부분을 함수로 래핑
 
         - `기존 로직`
+
             ![alt text](image-3.png)
         
         - `변경 로직`
+
             ![alt text](image-5.png)
 
 
@@ -128,7 +130,8 @@ network"로 일시 정지
     ```
 
     - 더미 데이터 결과
-    ![alt text](image-7.png)
+
+        ![alt text](image-7.png)
 
     - faker.js 한국어 버전
 
@@ -144,6 +147,7 @@ network"로 일시 정지
 - BookDetail.tsx
 
     - 리뷰 컴포넌트 추가
+    
         ![alt text](image-9.png)
 
 - BookReview.tsx
@@ -426,6 +430,7 @@ network"로 일시 정지
                 ```
 
                 - form을 통해 전송하는 score가 string으로 전송
+                    
                     ![alt text](image-11.png)
 
                 - useForm에서 제공하는 Number 처리, `valueAsNumber`
@@ -437,4 +442,3 @@ network"로 일시 정지
 
             `{errors.content && <p className='error-text'>리뷰 내용을 입력해 주세요</p>}`
 
-            
