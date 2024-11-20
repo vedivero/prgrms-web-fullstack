@@ -1,9 +1,10 @@
 import { styled } from 'styled-components';
 import logo from '../../assets/images/logo4.jpg';
-import { FaSignInAlt, FaRegUser } from 'react-icons/fa';
+import { FaSignInAlt, FaRegUser, FaUserCircle } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { useCategory } from '../../hooks/useCategory';
 import { useAuthStore } from '../../store/authStore';
+import Dropdown from './Dropdown';
 
 const Header = () => {
    const { category } = useCategory();
@@ -28,41 +29,45 @@ const Header = () => {
             </ul>
          </nav>
          <nav className='auth'>
-            {isLoggedIn && (
-               <ul>
-                  <li>
-                     <StyledCategoryLink to='/cart'>
-                        <FaSignInAlt />
-                        장바구니
-                     </StyledCategoryLink>
-                  </li>
-                  <li>
-                     <StyledCategoryLink to='/orderList'>
-                        <FaSignInAlt />
-                        주문내역
-                     </StyledCategoryLink>
-                  </li>
-                  <li>
-                     <button onClick={storeLogout}>로그아웃</button>
-                  </li>
-               </ul>
-            )}
-            {!isLoggedIn && (
-               <ul>
-                  <li>
-                     <StyledCategoryLink to='/login'>
-                        <FaSignInAlt />
-                        로그인
-                     </StyledCategoryLink>
-                  </li>
-                  <li>
-                     <StyledCategoryLink to='/signUp'>
-                        <FaRegUser />
-                        회원가입
-                     </StyledCategoryLink>
-                  </li>
-               </ul>
-            )}
+            <Dropdown toggleButton={<FaUserCircle />}>
+               <>
+                  {isLoggedIn && (
+                     <ul>
+                        <li>
+                           <StyledCategoryLink to='/cart'>
+                              <FaSignInAlt />
+                              장바구니
+                           </StyledCategoryLink>
+                        </li>
+                        <li>
+                           <StyledCategoryLink to='/orderList'>
+                              <FaSignInAlt />
+                              주문내역
+                           </StyledCategoryLink>
+                        </li>
+                        <li>
+                           <button onClick={storeLogout}>로그아웃</button>
+                        </li>
+                     </ul>
+                  )}
+                  {!isLoggedIn && (
+                     <ul>
+                        <li>
+                           <StyledCategoryLink to='/login'>
+                              <FaSignInAlt />
+                              로그인
+                           </StyledCategoryLink>
+                        </li>
+                        <li>
+                           <StyledCategoryLink to='/signUp'>
+                              <FaRegUser />
+                              회원가입
+                           </StyledCategoryLink>
+                        </li>
+                     </ul>
+                  )}
+               </>
+            </Dropdown>
          </nav>
       </HeaderStyle>
    );
@@ -88,7 +93,9 @@ const HeaderStyle = styled.header`
    .auth {
       ul {
          display: flex;
+         flex-direction: column;
          gap: 16px;
+         width: 100px;
       }
    }
    .logo {

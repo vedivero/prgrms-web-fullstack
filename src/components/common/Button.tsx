@@ -6,8 +6,8 @@ interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {
    children: React.ReactNode;
    size: ButtonSize;
    schema: ButtonSchema;
-   disabled: boolean;
-   isLoading: boolean;
+   disabled?: boolean;
+   isLoading?: boolean;
 }
 
 const Button = ({ children, size, schema, disabled, isLoading, ...props }: Props) => {

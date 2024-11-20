@@ -9,6 +9,8 @@ import { Link } from 'react-router-dom';
 import EllipsisBox from '../components/common/EllipsisBox';
 import LikeButton from '../components/book/LikeButton';
 import AddToCart from '../components/book/AddToCart';
+import BookReview from '@/components/book/BookReview';
+import { Tabs, Tab } from '@/components/common/Tabs';
 
 const bookInfoList = [
    {
@@ -46,7 +48,7 @@ const bookInfoList = [
 
 const BookDetail = () => {
    const { bookId } = useParams();
-   const { book, favoriteToggle } = useBook(bookId);
+   const { book, favoriteToggle, reviews, addReview } = useBook(bookId);
    if (!book) return null;
 
    return (
@@ -77,10 +79,26 @@ const BookDetail = () => {
             </div>
          </header>
          <div className='content'>
+            <Tabs>
+               <Tab title='상세 설명'>
+                  <Title size='medium'>상세 설명</Title>
+                  <EllipsisBox lineLimit={4}>{book.detail}</EllipsisBox>
+               </Tab>
+               <Tab title='목차'>
+                  <Title size='medium'>목차</Title>
+                  <p className='index'>{book.contents}</p>
+               </Tab>
+               <Tab title='리뷰'>
+                  <Title size='medium'>리뷰</Title>
+                  <BookReview reviews={reviews} onAdd={addReview}></BookReview>
+               </Tab>
+            </Tabs>
             <Title size='medium'>상세 설명</Title>
             <EllipsisBox lineLimit={3}>{book.detail}</EllipsisBox>
             <Title size='medium'>목차</Title>
             <p className='index'>{book.contents}</p>
+            <Title size='medium'>리뷰</Title>
+            <BookReview reviews={reviews} onAdd={addReview} />
          </div>
       </BookDetailStyle>
    );
