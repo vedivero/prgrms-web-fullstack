@@ -32,7 +32,7 @@ const BookItem = ({ book, view }: Props) => {
       </BookItemStyle>
    );
 };
-const BookItemStyle = styled.div<Pick<Props, 'view'>>`
+export const BookItemStyle = styled.div<Pick<Props, 'view'>>`
    a {
       display: flex;
       flex-direction: ${({ view }) => (view === 'grid' ? 'column' : 'row')};

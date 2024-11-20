@@ -65,3 +65,16 @@ export const unFavoriteBook = async (bookId: string | undefined) => {
    });
    return response.data;
 };
+
+export const fetchBestBooks = async () => {
+   const token = localStorage.getItem('token');
+   if (!token) {
+      throw new Error('JWT 토큰이 없습니다. 로그인하세요.');
+   }
+   const response = await httpClient.get<Book[]>(`/books/best`, {
+      headers: {
+         Authorization: `${token}`,
+      },
+   });
+   return response.data;
+};
