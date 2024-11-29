@@ -13,6 +13,10 @@
     - 효율성: 팀별로 분리된 서비스 개발이 가능.
 
 
+<br>
+<br>
+
+
 
 ## 컨테이너 인프라와 MSA의 관계
 - 컨테이너 모델 특징:
@@ -20,6 +24,10 @@
     - 컨테이너는 필요한 실행 환경을 포함해 동일한 상태에서 실행 가능.
 - 적용 사례:
     - 사용자 인터페이스, 비즈니스 로직, 데이터베이스, 백업 서비스 등 역할별로 분리된 컨테이너 사용.
+
+<br>
+<br>
+
 
 ## 쿠버네티스(Kubernetes)
 - 정의: 컨테이너 오케스트레이션 솔루션.
@@ -31,6 +39,10 @@
 - 구성 요소:
     - 마스터 노드(Control Plane): API 서버, 스케줄러, 컨트롤러 매니저 등.
     - 워커 노드(Worker Node): 컨테이너 실행 및 관리(CRI, kubelet 등).
+
+
+<br>
+<br>
 
 
 ## Pod와 컨테이너
@@ -45,7 +57,11 @@
 - 연관성:
     - Pod는 컨테이너 간 네트워크와 스토리지를 공유.
 
-    
+   
+<br>
+<br>
+
+ 
 
 
 ## Kubernetes가 제공하는 주요 기능
@@ -64,17 +80,29 @@
 - 서비스 디스커버리:
     - 동적으로 생성되는 Pod를 DNS 기반으로 관리.
 
+<br>
+<br>
+
+
 ## Kubernetes의 생명 주기
 1. 생성 요청: kubectl을 통해 API 서버에 Pod 생성 요청.
 1. 상태 기록: API 서버가 etcd에 상태 저장.
 1. 스케줄링: Pod를 실행할 워커 노드를 결정.
 1. 실행: 워커 노드의 kubelet이 컨테이너를 실행.
 
+<br>
+<br>
+
+
 ## Kubernetes 오브젝트
 - Pod: 컨테이너의 집합으로 단일 작업 수행.
 - Namespace: 리소스 그룹 관리.
 - Volume: Pod에서 사용할 디렉토리 제공.
 - Service: Pod의 네트워크 접근을 추상화.
+
+<br>
+<br>
+
 
 
 ## Kubernetes 클러스터 인프라 구성
@@ -86,6 +114,10 @@
     - SUSE Rancher, RedHat OpenShift.
 
 
+<br>
+<br>
+
+
 # 도커 데스크톱을 이용한 로컬 환경 클러스터 구성
 
 - Enable Kubernetes 체크하기
@@ -95,6 +127,10 @@
     - 설치
 
         ![alt text](image-1.png)
+
+
+<br>
+<br>
 
 
 ## kubectl 명령어 설치
@@ -122,6 +158,10 @@
     - ROLES: 노드 역할 (예: control-plane은 관리 노드).
     - AGE: 노드가 생성된 시간.
     - VERSION: 쿠버네티스 버전.
+
+<br>
+<br>
+
 
 
 ## 문제가 발생할 경우
@@ -152,6 +192,10 @@
 <br>
 
 # 쿠버네티스 기본 사용법
+
+<br>
+<br>
+
 
 ## 노드(Nod), 포드(Pod) 정보  조회
 
@@ -187,6 +231,10 @@
     kube-system   vpnkit-controller                        1/1     Running   0          14m
     ```
 
+<br>
+<br>
+
+
 
 ## 컨테이너 이미지를 이용한 포드 생성
 
@@ -217,8 +265,16 @@
         ```
 
 
+<br>
+<br>
+
+
 
 ## 쿠버네티스 디플로이먼트 (Kubernetes Deployment)
+
+<br>
+<br>
+
 
 ### Deployment란?
 
@@ -226,6 +282,10 @@
 - 애플리케이션의 배포, 업데이트, 롤백 등의 기능을 유연하게 관리.
 - 레플리카셋 (ReplicaSet) 기반으로 동일한 모양의 다수의 Pod를 생성하고 관리.
 - 일반적으로 상태가 없는(Stateless) 애플리케이션 배포에 적합.
+
+<br>
+<br>
+
 
 ### 주요 특징
 
@@ -248,6 +308,10 @@
     - 주로 데이터 저장을 요구하지 않는 서비스에 적합.
     - 예: 웹 애플리케이션의 프론트엔드.
 
+<br>
+<br>
+
+
 ### 동작 방식
 
 - 디플로이먼트 정의
@@ -264,6 +328,10 @@
  
     - 사용자가 선언한 상태(예: Pod 5개 실행)를 Kubernetes가 감지하고 조정.
     - Pod가 삭제되거나 장애가 발생하면, 자동으로 새로운 Pod를 생성하여 상태 복구.
+
+<br>
+<br>
+
 
 
 
@@ -391,6 +459,10 @@
 
             - 컨테이너 3개가 조회됨
 
+
+
+<br>
+<br>
 
 
 ## 클러스터 외부로 노출시키기
@@ -527,6 +599,10 @@
 
 
 
+<br>
+<br>
+
+
 ## 오브젝트 삭제 방법
 
 - svc 조회
@@ -559,6 +635,10 @@
     - 서버에 연결할 수 없다는 메세지 출력
 
     ![alt text](image-4.png)
+
+
+<br>
+<br>
 
 
 ## 포드 삭제
@@ -633,6 +713,10 @@
         No resources found in default namespace.
         ```
 
+<br>
+<br>
+
+
 ## 매니페스트 (Manifest)        
 
 - 개념
@@ -662,6 +746,10 @@
 
 >이 응용을 (수동으로) k8s 클러스터에 배포하고 예외상황에 대한 k8s 의 대처 방식 관측
 
+<br>
+<br>
+
+
 
 ## 실습 도구로서의 웹 서버 만들기
 
@@ -681,8 +769,16 @@
     - 클러스터에서 수신한 요청에 대하여 k8s 가 반응하는 방식을 간단히 (hostname 과 IP 로) 모니터링
 
 
+<br>
+<br>
+
+
 
 ## 서버 구성 준비
+
+<br>
+<br>
+
 
 ### requirements.txt 생성
 
@@ -696,6 +792,10 @@
 
     - echo Flask는 파일에 Flask라는 텍스트를 작성.
     - `>`는 requirements.txt 파일에 내용을 작성하거나 새로 생성.
+
+
+<br>
+<br>
 
 
 ### site.conf 생성
@@ -724,6 +824,10 @@
         - `>`는 site.conf 파일에 내용을 작성하거나 새로 생성.
         - 각 라인 끝에 \;는 Nginx 설정에서 세미콜론이 필수이므로 추가.
 
+<br>
+<br>
+
+
 ### start.sh 생성
 
 - 이 파일은 Nginx 서비스를 시작하고 Flask 애플리케이션을 실행하는 스크립트
@@ -738,6 +842,10 @@
     - 위와 같이 여러 줄을 작성하여 start.sh 파일을 생성.
     - Nginx를 시작하고 Flask 애플리케이션을 실행하는 명령어 포함.
 
+<br>
+<br>
+
+
 ### 파일 생성 확인
 
 ```
@@ -748,6 +856,10 @@ dir
 2024-11-29 (금)  오후 05:24                 8 requirements.txt
 2024-11-29 (금)  오후 05:26               181 site.conf
 ```
+
+<br>
+<br>
+
 
 
 ### app.py 파일 생성
@@ -764,6 +876,10 @@ dir
     echo     return "Hello, World!" >> app.py
     ```
 
+<br>
+<br>
+
+
 ### start.sh 파일 생성
 
 - CMD에서 start.sh 파일을 생성
@@ -773,6 +889,10 @@ dir
     echo service nginx start >> start.sh
     echo /flaskapp/venv/bin/flask --app app run --host=0.0.0.0 --port=5000 >> start.sh
     ```
+
+<br>
+<br>
+
 
 
 ### Dockfile 생성
@@ -806,6 +926,10 @@ echo FROM nginx:latest > Dockerfile
 
     ENTRYPOINT ["/flaskapp/start.sh"]
     ```
+
+<br>
+<br>
+
 
 ### Docker 이미지 빌드
 
@@ -851,11 +975,19 @@ echo FROM nginx:latest > Dockerfile
         hostname      latest  8affbda88f47   10 minutes ago   400MB
         ```
 
+<br>
+<br>
+
+
 ## 이미지 태그
 
 ```
 docker tag hostname:latest vedivero/hostname:latest
 ```
+
+<br>
+<br>
+
 
 ## 리포지토리에 푸시
 
@@ -894,6 +1026,10 @@ latest: digest: sha256:4573b3a3418c1144d4ad99d3ba342ea6b6770425cdce104c79df1c00e
 리포지토리에서 이미지지를 풀(pull)하여
 
 컨테이너 생성에 이용할 수 있게 됨
+
+
+<br>
+<br>
 
 
 
@@ -947,6 +1083,10 @@ latest: digest: sha256:4573b3a3418c1144d4ad99d3ba342ea6b6770425cdce104c79df1c00e
     ```
 
 
+<br>
+<br>
+
+
 ##  Kubernetes 클러스터에 정의된 리소스를 생성
 
 ```
@@ -984,6 +1124,10 @@ deployment.apps/dpy-hname created
         dpy-hname-7ccff44bdc-btln4   1/1     Running   0          8m34s   10.1.0.12   dpy-hname-7ccff44bdc-r99rs   1/1     Running   0          8m34s   10.1.0.13   
         dpy-hname-7ccff44bdc-skk5k   1/1     Running   0          8m34s   10.1.0.11   
         ```
+
+<br>
+<br>
+
 
 ## 생성한 디플로이먼츠를 노출시키기 위해 노드 포트로 된 서비스를 생성
 
@@ -1053,6 +1197,10 @@ service/svc-hname created
             ```
 
 
+<br>
+<br>
+
+
 
 # 주기적인 요청을 반복하는 테스트
 
@@ -1061,6 +1209,10 @@ service/svc-hname created
     - 1. 디플로이먼트의 레플리카셋에 포함된 포드가 사멸하는 경우
 
     - 2. 특정 포드에서 실행하는 컨테이너에 오류가 발생하는 경우
+
+
+<br>
+<br>
 
 
 ## 요청을 반복하는 스크립트 생성
@@ -1075,6 +1227,10 @@ while ($true) {
     Start-Sleep -Seconds 1
 }
 ```
+
+<br>
+<br>
+
 
 ## deployments.yaml 파일 수정
 
@@ -1104,6 +1260,10 @@ while ($true) {
             - containerPort: 80
     ```
 
+<br>
+<br>
+
+
 ## Kubernetes 클러스터에 설정 파일(deployment.yaml)을 적용
 
 ```
@@ -1111,6 +1271,10 @@ kubectl apply -f deployment.yaml
 
 deployment.apps/dpy-hname configured
 ```
+
+<br>
+<br>
+
 
 ## 테스트 포드가 사멸하는 경우
 
@@ -1154,6 +1318,10 @@ deployment.apps/dpy-hname configured
     dpy-hname-7ccff44bdc-btln4   1/1     Running            1 (31m ago)    8h    10.1.0.16
     ```
 
+<br>
+<br>
+
+
 ## 가동 중인 상태에서 Pod 삭제
 
 - 삭제 명령어
@@ -1188,6 +1356,10 @@ deployment.apps/dpy-hname configured
     dpy-hname   1/1     1            1           9h
     ```
 
+<br>
+<br>
+
+
 
 ## 확인한 점
 
@@ -1203,6 +1375,10 @@ k8s 는 새로운 포드를 생성하고 같은 종류 (이미지가 동일한) 
 
 - 단, 포드는 언제든지 죽을 수 있는 오브젝트이므로 컨테이너에 기반한 응용을 개발함에 있어 상태를 띠지 않는
 (stateless) 방식으로 만들어야 함
+
+
+<br>
+<br>
 
 
 ## 컨테이너 오류 발생 상황 가정
@@ -1290,12 +1466,16 @@ k8s 는 새로운 포드를 생성하고 같은 종류 (이미지가 동일한) 
     - 잠시 응답을 못하고 있다가 다시 응답
 
 
+<br>
+<br>
+
 ## 해당 Pod에 Restart 발생
 
 - 문제가 발생하여 쿠버네티스가 다시 컨테이너를 생성하여 응용을 지속 실행
     
     ```
     kubectl get pods
+
     NAME                         READY   STATUS             RESTARTS         AGE
     dpy-hname-7ccff44bdc-7t4rc   1/1     Running            1 (105s ago)     15m
     ```
