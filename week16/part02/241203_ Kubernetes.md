@@ -1203,3 +1203,99 @@ k8s 는 새로운 포드를 생성하고 같은 종류 (이미지가 동일한) 
 
 - 단, 포드는 언제든지 죽을 수 있는 오브젝트이므로 컨테이너에 기반한 응용을 개발함에 있어 상태를 띠지 않는
 (stateless) 방식으로 만들어야 함
+
+
+## 컨테이너 오류 발생 상황 가정
+
+- 반복 요청하는 스크립트 파일 실행
+
+    ```
+    ./check.ps1
+
+    1 <p>Hostname: dpy-hname-7ccff44bdc-7t4rc</p><p>IPv4 Address: 10.1.0.23</p>
+    2 <p>Hostname: dpy-hname-7ccff44bdc-7t4rc</p><p>IPv4 Address: 10.1.0.23</p>
+    3 <p>Hostname: dpy-hname-7ccff44bdc-7t4rc</p><p>IPv4 Address: 10.1.0.23</p>
+    4 <p>Hostname: dpy-hname-7ccff44bdc-7t4rc</p><p>IPv4 Address: 10.1.0.23</p>
+    5 <p>Hostname: dpy-hname-7ccff44bdc-7t4rc</p><p>IPv4 Address: 10.1.0.23</p>
+    6 <p>Hostname: dpy-hname-7ccff44bdc-7t4rc</p><p>IPv4 Address: 10.1.0.23</p>
+    7 <p>Hostname: dpy-hname-7ccff44bdc-7t4rc</p><p>IPv4 Address: 10.1.0.23</p>
+    8 <p>Hostname: dpy-hname-7ccff44bdc-7t4rc</p><p>IPv4 Address: 10.1.0.23</p>
+    ```
+
+- 컨테이너 쉘에 접속
+
+    ```
+    kubectl exec -it dpy-hname-7ccff44bdc-7t4rc -- /bin/bash
+    
+    root@dpy-hname-7ccff44bdc-7t4rc:/flaskapp#
+    ```
+
+- 접속한 컨테이너 내 파일 조회
+
+    ```
+    root@dpy-hname-7ccff44bdc-7t4rc:/flaskapp# ls
+    
+    __pycache__  app.py  requirements.txt  start.sh  venv
+    ```
+
+
+- `flask` 포함한 프로세스를 검색하는 명령어
+
+    ```
+    ps ax | grep flask
+
+    1 ?        Ssl    0:00 /usr/bin/qemu-aarch64 /bin/sh /bin/sh -c "/flaskapp/start.sh"
+    8 ?        Sl     0:00 /usr/bin/qemu-aarch64 /bin/sh /bin/sh /flaskapp/start.sh
+    61 ?        Sl     0:04 /usr/bin/qemu-aarch64 /flaskapp/venv/bin/python3 /flaskapp/venv/bin/python3 /flaskapp/venv/bin/flask --app app run --host 0.0.0.0 
+    547 pts/0    Sl+    0:00 /usr/bin/qemu-aarch64 /usr/bin/grep grep flask
+    ```
+        - 해당 스크립트 파일이 실행 중인 프로세스의 PID는 61번
+
+- 프로세스 Kill
+
+    ```
+    kill -9 61
+    ```
+
+    ```
+    359 <p>Hostname: dpy-hname-7ccff44bdc-7t4rc</p><p>IPv4 Address: 10.1.0.23</p>
+    Invoke-RestMethod :
+    502 Bad Gateway
+    502 Bad Gateway
+    nginx/1.25.3
+    위치 C:\Users\vediv\kubernetes\check.ps1:3 문자:17
+    +     $response = Invoke-RestMethod "http://localhost:30000"
+    +                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        + CategoryInfo          : InvalidOperation: (System.Net.HttpWebRequest:HttpWebRequest) [Invoke-RestMethod], WebExc
+    eption
+        + FullyQualifiedErrorId : WebCmdletWebResponseException,Microsoft.PowerShell.Commands.InvokeRestMethodCommand
+
+    360 <p>Hostname: dpy-hname-7ccff44bdc-7t4rc</p><p>IPv4 Address: 10.1.0.23</p>
+    Invoke-RestMethod :
+    502 Bad Gateway
+    502 Bad Gateway
+    nginx/1.25.3
+    위치 C:\Users\vediv\kubernetes\check.ps1:3 문자:17
+    +     $response = Invoke-RestMethod "http://localhost:30000"
+    +                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        + CategoryInfo          : InvalidOperation: (System.Net.HttpWebRequest:HttpWebRequest) [Invoke-RestMethod], WebExc
+    eption
+        + FullyQualifiedErrorId : WebCmdletWebResponseException,Microsoft.PowerShell.Commands.InvokeRestMethodCommand
+
+    361 <p>Hostname: dpy-hname-7ccff44bdc-7t4rc</p><p>IPv4 Address: 10.1.0.23</p>
+    362 <p>Hostname: dpy-hname-7ccff44bdc-7t4rc</p><p>IPv4 Address: 10.1.0.23</p>
+    363 <p>Hostname: dpy-hname-7ccff44bdc-7t4rc</p><p>IPv4 Address: 10.1.0.23</p>
+    364 <p>Hostname: dpy-hname-7ccff44bdc-7t4rc</p><p>IPv4 Address: 10.1.0.23</p>
+    ```
+    - 잠시 응답을 못하고 있다가 다시 응답
+
+
+## 해당 Pod에 Restart 발생
+
+- 문제가 발생하여 쿠버네티스가 다시 컨테이너를 생성하여 응용을 지속 실행
+    
+    ```
+    kubectl get pods
+    NAME                         READY   STATUS             RESTARTS         AGE
+    dpy-hname-7ccff44bdc-7t4rc   1/1     Running            1 (105s ago)     15m
+    ```
