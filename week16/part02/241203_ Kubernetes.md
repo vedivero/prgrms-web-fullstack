@@ -644,3 +644,343 @@
     - 이를 오브젝트 스펙(Object Specification)이라고도 함.
     - 파일을 기반으로 Kubernetes에서 오브젝트를 생성, 수정 가능.
 
+
+
+---
+
+<br>
+<br>
+<br>
+<br>
+
+# 쿠버네티스를 이용한 서비스 운용
+
+
+>간단한 테스트용 flask 웹 응용을 만들고 이것을 nginx 위에 쌓아 도커 이미지 만들기
+
+>만들어진 이미지를 이용한 컨테이너를 실행하고 서비스로 노출하도록 매니페스트 작성
+
+>이 응용을 (수동으로) k8s 클러스터에 배포하고 예외상황에 대한 k8s 의 대처 방식 관측
+
+
+## 실습 도구로서의 웹 서버 만들기
+
+- 예제로 (쿠버네티스 동작을 관찰하기 위해) 간단한 웹 응용을 제작
+
+    - 기능: 웹 요청을 수신하여 이의 응답으로 다음의 두 가지 정보를 출력
+        - hostname: 이것은 어떻게 설정될까? 노드의 정보인가?
+        - IP 주소: 이것은 또 어떻게 설정될까? 포드에 동적으로 붙여지는 것인가?
+
+- 구현 방법
+
+- docker build 를 통해 (Dockerfile 작성) 예제 서버 이미지 작성
+    - 웹 서버로는 nginx 를 이용 (base image 는 nginx:latest)
+    - Flask 를 이용한 웹 응용 작성
+    - 설정 및 구동 파일 등은 각각 작성해서 이미지에 추가
+- 목적?
+    - 클러스터에서 수신한 요청에 대하여 k8s 가 반응하는 방식을 간단히 (hostname 과 IP 로) 모니터링
+
+
+
+## 서버 구성 준비
+
+### requirements.txt 생성
+
+- 이 파일은 Flask와 같은 Python 패키지 의존성을 정의
+
+    ```
+    echo Flask > requirements.txt
+    ```
+
+    ![alt text](image-5.png)
+
+    - echo Flask는 파일에 Flask라는 텍스트를 작성.
+    - `>`는 requirements.txt 파일에 내용을 작성하거나 새로 생성.
+
+
+### site.conf 생성
+
+- 이 파일은 Nginx 서버의 설정 파일로, Nginx가 Flask 애플리케이션을 프록시로 연결하도록 설정
+
+    ```
+    (
+        More? echo server {
+        More? echo     listen 80\;;
+        More? echo     server_name localhost\;;
+        More? echo     access_log /var/log/nginx/access.log main\;;
+        More? echo     location / {
+        More? echo         proxy_pass http://127.0.0.1:5000\;;
+        More? echo     }
+        More? echo }
+        More? 
+    )
+    > site.conf
+    ```
+
+    ![alt text](image-6.png)
+
+    - 설명:
+        - (와 )로 여러 줄의 텍스트를 하나의 파일에 작성.
+        - `>`는 site.conf 파일에 내용을 작성하거나 새로 생성.
+        - 각 라인 끝에 \;는 Nginx 설정에서 세미콜론이 필수이므로 추가.
+
+### start.sh 생성
+
+- 이 파일은 Nginx 서비스를 시작하고 Flask 애플리케이션을 실행하는 스크립트
+
+    ```
+    (
+    echo service nginx start
+    echo /flaskapp/venv/bin/flask --app run --host 0.0.0.0
+    ) > start.sh
+    ```
+
+    - 위와 같이 여러 줄을 작성하여 start.sh 파일을 생성.
+    - Nginx를 시작하고 Flask 애플리케이션을 실행하는 명령어 포함.
+
+### 파일 생성 확인
+
+```
+dir
+
+2024-11-29 (금)  오후 05:26    <DIR>          .
+2024-11-29 (금)  오후 05:22    <DIR>          ..
+2024-11-29 (금)  오후 05:24                 8 requirements.txt
+2024-11-29 (금)  오후 05:26               181 site.conf
+```
+
+
+### app.py 파일 생성
+
+- CMD에서 Flask 애플리케이션 파일 app.py를 생성
+
+    ```
+    echo from flask import Flask > app.py
+    echo. >> app.py
+    echo app = Flask(__name__) >> app.py
+    echo. >> app.py
+    echo @app.route("/") >> app.py
+    echo def hello(): >> app.py
+    echo     return "Hello, World!" >> app.py
+    ```
+
+### start.sh 파일 생성
+
+- CMD에서 start.sh 파일을 생성
+
+    ```
+    echo #!/bin/bash > start.sh
+    echo service nginx start >> start.sh
+    echo /flaskapp/venv/bin/flask --app app run --host=0.0.0.0 --port=5000 >> start.sh
+    ```
+
+
+### Dockfile 생성
+
+```
+echo FROM nginx:latest > Dockerfile
+```
+
+![alt text](image-7.png)
+
+- Dockerfile
+
+    ```
+    FROM nginx:latest
+    RUN apt update
+    RUN apt install -y python3-full
+    RUN apt install -y procps
+
+    WORKDIR /flaskapp
+    RUN python3 -m venv /flaskapp/venv
+    COPY requirements.txt requirements.txt
+    RUN /flaskapp/venv/bin/pip install -r requirements.txt
+
+    COPY app.py app.py
+    COPY site.conf /etc/nginx/sites-available/flaskapp.conf
+    RUN ln -s /etc/nginx/sites-available/flaskapp.conf /etc/nginx/conf.d
+    RUN mv /etc/nginx/conf.d/default.conf /etc/nginx/conf.d/default.conf.bak
+
+    COPY start.sh start.sh
+    RUN chmod 777 start.sh
+
+    ENTRYPOINT ["/flaskapp/start.sh"]
+    ```
+
+### Docker 이미지 빌드
+
+- Dockerfile이 저장된 디렉터리로 이동하여 Docker 이미지를 빌드
+
+    ```
+    docker build -t flask-nginx .
+
+    => [internal] load build definition from Dockerfile 0.0s
+    => => transferring dockerfile: 599B 0.0s
+    => [internal] load metadata for docker.io/library/nginx:latest  0.0s
+    => [internal] load .dockerignore  0.0s
+    => => transferring context:  2B  0.0s
+    => [internal] load build context  0.0s
+    => => transferring context: 254B  0.0s
+    => CACHED [ 1/14] FROM docker.io/library/nginx:latest 0s
+    => [ 2/14] RUN apt update 2.8s
+    => [ 3/14] RUN apt install -y python3-full  15.1s
+    => [ 4/14] RUN apt install -y procps  1.9s
+    => [ 5/14] WORKDIR /flaskapp  0.0s
+    => [ 6/14] RUN python3 -m venv /flaskapp/venv  3s
+    => [ 7/14] COPY requirements.txt requirements.txt  0.0s
+    => [ 8/14] RUN /flaskapp/venv/bin/pip install -r requirements.txt  1.9s
+    => [ 9/14] COPY app.py app.py  0.0s
+    => [10/14] COPY site.conf /etc/nginx/sites-available/flaskapp.conf  0.0s
+    => [11/14] RUN ln -s /etc/nginx/sites-available/flaskapp.conf /etc/nginx/conf.d  0.4s
+    => [12/14] RUN mv /etc/nginx/conf.d/default.conf /etc/nginx/conf.d/default.conf.bak  0.7s
+    => [13/14] COPY start.sh start.sh  0.0s
+    => [14/14] RUN chmod 777 start.sh 0.8s
+    => exporting to image 1.4s
+    => => exporting layers 1.4s
+    => => writing image sha256:8affbda88f47c0186cad16dd757a2872c90d18461fbea14dd8bce7d0da76e150 0.0s
+    => => naming to docker.io/library/flask-nginx
+    ```
+
+
+    - 빌드한 이미지 확인
+
+        ```
+        docker images
+        REPOSITORY     TAG     IMAGE ID       CREATED          SIZE
+        flask-nginx   latest  8affbda88f47   10 minutes ago   400MB
+        hostname      latest  8affbda88f47   10 minutes ago   400MB
+        ```
+
+## 이미지 태그
+
+```
+docker tag hostname:latest vedivero/hostname:latest
+```
+
+## 리포지토리에 푸시
+
+```
+docker push vedivero/hostname:latest
+The push refers to repository [docker.io/vedivero/hostname]
+3c725b70fa18: Pushed
+2f9c430d93f2: Pushed
+595929f9c568: Pushed
+14acfa49c1d1: Pushed
+8a52de9ef73b: Pushed
+8f829467b210: Pushed
+719e6cf444dd: Pushed
+681dbbc10225: Pushed
+a706e0bb1073: Pushed
+9063e30bb70f: Pushed
+59f8c51c98ba: Pushed                                                                                                                                                                                             e18f354706d5: Pushed
+f74c01256b76: Pushed
+16d387d1e121: Mounted from library/nginx
+d77616dbf44e: Mounted from library/nginx
+1013a9d59e8c: Mounted from library/nginx
+3f49e906ca03: Mounted from library/nginx
+fb34e34b4693: Mounted from library/nginx
+93a30ca6feb4: Mounted from library/nginx
+c3548211b826: Mounted from vedivero/my_httpd
+latest: digest: sha256:4573b3a3418c1144d4ad99d3ba342ea6b6770425cdce104c79df1c00eea2ee99 size: 4490
+```
+
+- 푸시된 이미지
+
+    ![alt text](image-8.png)
+
+
+푸시가 성공하면
+
+리포지토리에서 이미지지를 풀(pull)하여
+
+컨테이너 생성에 이용할 수 있게 됨
+
+
+
+## 매니페스트 작성
+
+
+- deployment.yaml
+
+    ```
+    echo apiVersion: apps/v1 > deployment.yaml
+    echo kind: Deployment >> deployment.yaml
+    echo metadata: >> deployment.yaml
+    echo  name: dpy-hname" >> deployment.yaml
+    echo  labels:" >> deployment.yaml
+    echo    app: hostname" >> deployment.yaml
+    echo spec: >> deployment.yaml
+    echo  replicas: 3" >> deployment.yaml
+    echo  selector:" >> deployment.yaml
+    echo    matchLabels:" >> deployment.yaml
+    echo      app: hostname" >> deployment.yaml
+    echo  template:" >> deployment.yaml
+    echo    metadata:" >> deployment.yaml
+    echo      labels:" >> deployment.yaml
+    echo        app: hostname" >> deployment.yaml
+    echo    spec:" >> deployment.yaml
+    echo      containers:" >> deployment.yaml
+    echo      - name: hname" >> deployment.yaml
+    echo        image: vedivero/hostname:latest" >> deployment.yaml
+    echo        ports:" >> deployment.yaml
+    echo        - containerPort: 80" >> deployment.yaml
+    ```
+
+
+- service.yaml
+
+    ```
+    echo apiVersion: v1 > service.yaml
+    echo kind: Service >> service.yaml
+    echo metadata: >> service.yaml
+    echo "  name: svc-hname" >> service.yaml
+    echo spec: >> service.yaml
+    echo "  type: NodePort" >> service.yaml
+    echo "  selector:" >> service.yaml
+    echo "    app: hostname" >> service.yaml
+    echo "  ports:" >> service.yaml
+    echo "  - name: http" >> service.yaml
+    echo "    protocol: TCP" >> service.yaml
+    echo "    port: 80" >> service.yaml
+    echo "    targetPort: 80" >> service.yaml
+    echo "    nodePort: 30000" >> service.yaml
+    ```
+
+
+##  Kubernetes 클러스터에 정의된 리소스를 생성
+
+```
+kubectl apply -f deployment.yaml
+
+deployment.apps/dpy-hname created
+```
+
+- 디플로이먼트 조회
+
+    ```
+    kubectl get deployments
+
+    NAME        READY   UP-TO-DATE   AVAILABLE   AGE
+    dpy-hname   3/3     3            3           2m37s
+    ```
+
+    - Deployment 리소스가 생성
+    - Deployment는 Pod의 생성과 관리를 담당하는 Kubernetes 리소스
+    - dpy-hname Deployment에서 정의한 설정에 따라 생성된 것
+
+        ```
+        kubectl get pods
+        
+        NAME                         READY   STATUS    RESTARTS   AGE
+        dpy-hname-7ccff44bdc-btln4   1/1     Running   0          4m49s
+        dpy-hname-7ccff44bdc-r99rs   1/1     Running   0          4m49s
+        dpy-hname-7ccff44bdc-skk5k   1/1     Running   0          4m49s
+        ```
+
+        ```
+        kubectl get pods -o wide
+
+        NAME                         READY   STATUS    RESTARTS   AGE     IP          
+        dpy-hname-7ccff44bdc-btln4   1/1     Running   0          8m34s   10.1.0.12   dpy-hname-7ccff44bdc-r99rs   1/1     Running   0          8m34s   10.1.0.13   
+        dpy-hname-7ccff44bdc-skk5k   1/1     Running   0          8m34s   10.1.0.11   
+        ```
