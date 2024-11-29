@@ -984,3 +984,222 @@ deployment.apps/dpy-hname created
         dpy-hname-7ccff44bdc-btln4   1/1     Running   0          8m34s   10.1.0.12   dpy-hname-7ccff44bdc-r99rs   1/1     Running   0          8m34s   10.1.0.13   
         dpy-hname-7ccff44bdc-skk5k   1/1     Running   0          8m34s   10.1.0.11   
         ```
+
+## 생성한 디플로이먼츠를 노출시키기 위해 노드 포트로 된 서비스를 생성
+
+```
+kubectl apply -f service.yaml
+
+service/svc-hname created
+```
+
+- 확인 
+    ```
+    kubectl get svc
+
+    NAME         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
+    svc-hname    NodePort    10.104.119.22   <none>        80:30000/TCP   12s
+    ```
+
+- Kubernetes 클러스터 내에서 서비스와 파드가 정상적으로 작동하고 있음
+
+    ```
+    curl localhost:30000
+
+    <p>Hostname: dpy-hname-7ccff44bdc-skk5k</p><p>IPv4 Address: 10.1.0.17</p>
+    ```
+
+        <p>Hostname: dpy-hname-7ccff44bdc-skk5k</p>
+
+    - Hostname은 실행 중인 Pod의 이름
+        - Pod 이름 dpy-hname-7ccff44bdc-skk5k는 Kubernetes가 자동 생성한 파드 이름
+        - dpy-hname은 디플로이먼트 이름과 연결
+    
+    - <p>IPv4 Address: 10.1.0.17</p>
+
+        - IPv4 Address는 해당 파드의 클러스터 내부 IP 주소입니다.
+        - 클러스터 네트워크에서 다른 파드가 이 IP를 통해 통신할 수 있습니다.
+    
+    - curl localhost:30000
+
+        - 이 명령어는 로컬 호스트의 포트 30000에 요청을 보낸 것입니다.
+        - NodePort 서비스가 localhost:30000을 Kubernetes 클러스터의 파드에 매핑하고 있음을 보여줍니다.
+
+
+- 부하 균등화
+
+    ```
+    curl localhost:30000
+    <p>Hostname: dpy-hname-7ccff44bdc-r99rs</p><p>IPv4 Address: 10.1.0.19</p>
+
+    curl localhost:30000
+    <p>Hostname: dpy-hname-7ccff44bdc-skk5k</p><p>IPv4 Address: 10.1.0.17</p>
+
+    curl localhost:30000
+    <p>Hostname: dpy-hname-7ccff44bdc-btln4</p><p>IPv4 Address: 10.1.0.16</p>
+    ```
+
+    - 반복 실행 시 아이피 변경되는 현상
+        - 동일한 기능을 하는 똑같은 모습의 Pod들을 레플리카 셋이라고 한다
+        - Kubernetes 서비스가 로드 밸런싱을 수행하기 때문ㄹ
+
+            ```
+            kubectl get pods
+
+            NAME                         READY   STATUS    RESTARTS      AGE
+            dpy-hname-7ccff44bdc-btln4   1/1     Running   1 (10m ago)   8h
+            dpy-hname-7ccff44bdc-r99rs   1/1     Running   1 (10m ago)   8h
+            dpy-hname-7ccff44bdc-skk5k   1/1     Running   1 (10m ago)   8h
+            ```
+
+
+
+# 주기적인 요청을 반복하는 테스트
+
+- 반복된 요청의 클러스터 내의 예외상황이 발생하는 경우 쿠버네티스가 어떻게 동작하는지 관찰
+
+    - 1. 디플로이먼트의 레플리카셋에 포함된 포드가 사멸하는 경우
+
+    - 2. 특정 포드에서 실행하는 컨테이너에 오류가 발생하는 경우
+
+
+## 요청을 반복하는 스크립트 생성
+
+```
+echo $i = 0
+while ($true) {
+    $response = Invoke-RestMethod "http://localhost:30000"
+    $i++
+    Write-Host -NoNewline "$i "
+    Write-Host ($response -replace '\n', " ")
+    Start-Sleep -Seconds 1
+}
+```
+
+## deployments.yaml 파일 수정
+
+- replicas를 1로 수정
+
+    ```
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+    name: dpy-hname
+    labels:
+        app: hostname
+    spec:
+    replicas: 1
+    selector:
+        matchLabels:
+        app: hostname
+    template:
+        metadata:
+        labels:
+            app: hostname
+        spec:
+        containers:
+        - name: hname
+            image: vedivero/hostname:latest
+            ports:
+            - containerPort: 80
+    ```
+
+## Kubernetes 클러스터에 설정 파일(deployment.yaml)을 적용
+
+```
+kubectl apply -f deployment.yaml
+
+deployment.apps/dpy-hname configured
+```
+
+## 테스트 포드가 사멸하는 경우
+
+- 포드 조회
+
+    ```
+    kubectl get pods
+
+    NAME                         READY   STATUS        RESTARTS      AGE
+    dpy-hname-784984b456-7n6b2   0/1     Error         1 (5s ago)    9s
+    dpy-hname-7ccff44bdc-btln4   1/1     Running       1 (17m ago)   8h <<<
+    dpy-hname-7ccff44bdc-r99rs   1/1     Terminating   1 (17m ago)   8h
+    dpy-hname-7ccff44bdc-skk5k   1/1     Terminating   1 (17m ago)   8h
+    ```
+    - 하나의 pod만 작동 중
+
+
+- 요청을 반복하는 스크립트 파일 실행
+
+    ```
+    ./check.ps1
+
+    1 <p>Hostname: dpy-hname-7ccff44bdc-btln4</p><p>IPv4 Address: 10.1.0.16</p>
+    2 <p>Hostname: dpy-hname-7ccff44bdc-btln4</p><p>IPv4 Address: 10.1.0.16</p>
+    3 <p>Hostname: dpy-hname-7ccff44bdc-btln4</p><p>IPv4 Address: 10.1.0.16</p>
+    4 <p>Hostname: dpy-hname-7ccff44bdc-btln4</p><p>IPv4 Address: 10.1.0.16</p>
+    5 <p>Hostname: dpy-hname-7ccff44bdc-btln4</p><p>IPv4 Address: 10.1.0.16</p>
+    6 <p>Hostname: dpy-hname-7ccff44bdc-btln4</p><p>IPv4 Address: 10.1.0.16</p>
+    7 <p>Hostname: dpy-hname-7ccff44bdc-btln4</p><p>IPv4 Address: 10.1.0.16</p>
+    ```
+
+    - 하나의 pod로 가동되고 있음을 확인
+
+- IP를 체크해 해당 Pod가 맞는지 확인
+
+    ```
+    kubectl get pods -o wide
+
+    NAME                         READY   STATUS             RESTARTS       AGE   IP       
+    dpy-hname-784984b456-7n6b2   0/1     CrashLoopBackOff   7 (3m4s ago)   14m   10.1.0.22 <<<
+    dpy-hname-7ccff44bdc-btln4   1/1     Running            1 (31m ago)    8h    10.1.0.16
+    ```
+
+## 가동 중인 상태에서 Pod 삭제
+
+- 삭제 명령어
+    ```
+    kubectl delete pod dpy-hname-7ccff44bdc-btln4
+
+    pod "dpy-hname-7ccff44bdc-btln4" deleted
+    ```
+
+- Pod 상세 조회
+
+    ```
+    kubectl get pods -o wide
+
+    NAME                         READY   STATUS             RESTARTS       AGE   IP       
+    dpy-hname-784984b456-7n6b2   0/1     CrashLoopBackOff   7 (5m1s ago)   16m   10.1.0.22
+    dpy-hname-7ccff44bdc-7t4rc   1/1     Running            0              16s   10.1.0.23
+    dpy-hname-7ccff44bdc-btln4   1/1     Terminating        1 (33m ago)    8h    10.1.0.16 <<<
+
+    ```
+
+    - 기존에 동작하던 Pod(dpy-hname-7ccff44bdc-btln4)는 삭제 중 (Terminating)
+    - 새로운 Pod(dpy-hname-7ccff44bdc-7t4rc가 Running 상태로 응답을 받는다
+
+
+- 하나의 Pod가 실행되고 있음을 확인
+
+    ```
+    kubectl get deployment dpy-hname
+
+    NAME        READY   UP-TO-DATE   AVAILABLE   AGE
+    dpy-hname   1/1     1            1           9h
+    ```
+
+
+## 확인한 점
+
+디플로이먼트의 상태 유지
+
+- 디플로이먼트에 의하여 포드들이 배포된 상태에서 이 중 하나 이상의 포드가 (어떤 이유로든) 사멸하면
+k8s 는 새로운 포드를 생성하고 같은 종류 (이미지가 동일한) 의 컨테이너를 실행함
+
+- 포드가 사멸하면 k8s 는 새로운 포드를 생성함으로써 디플로이먼트에 선언된 "의도된 상태" 를 유지하려고 함
+
+- 클러스터 외부에는 별도의 서비스에 의하여 노출되므로 개별 포드의 클러스터 내 (동적 할당되는) IP 주소 등에
+대해서는 사용자가 관리할 필요 없음
+
+- 단, 포드는 언제든지 죽을 수 있는 오브젝트이므로 컨테이너에 기반한 응용을 개발함에 있어 상태를 띠지 않는
+(stateless) 방식으로 만들어야 함
