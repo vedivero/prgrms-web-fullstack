@@ -1479,3 +1479,260 @@ k8s 는 새로운 포드를 생성하고 같은 종류 (이미지가 동일한) 
     NAME                         READY   STATUS             RESTARTS         AGE
     dpy-hname-7ccff44bdc-7t4rc   1/1     Running            1 (105s ago)     15m
     ```
+
+
+
+---
+
+<br>
+<br>
+<br>
+<br>
+
+# 포드의 업데이트 및 복구
+
+> 소프트웨어 업데이트 실패 시, 빠르고 유연한 복구는 필수 기능
+
+- 1. 업데이트 자체가 실패하는 경우
+- 2. 새 버전의 소프트웨어가 오동작하는 경우
+
+<br>
+<br>
+
+
+## 롤아웃 정보 열람
+
+- 디플로이먼트 생성
+
+    ```
+    echo apiVersion: apps/v1 > rollout.yaml
+    echo kind: Deployment >> rollout.yaml
+    echo metadata: >> rollout.yaml
+    echo   name: dpy-hname >> rollout.yaml
+    echo   labels: >> rollout.yaml
+    echo     app: hostname >> rollout.yaml
+    echo spec: >> rollout.yaml
+    echo   replicas: 1 >> rollout.yaml
+    echo   selector: >> rollout.yaml
+    echo     matchLabels: >> rollout.yaml
+    echo       app: hostname >> rollout.yaml
+    echo   template: >> rollout.yaml
+    echo     metadata: >> rollout.yaml
+    echo       labels: >> rollout.yaml
+    echo         app: hostname >> rollout.yaml
+    echo     spec: >> rollout.yaml
+    echo       containers: >> rollout.yaml
+    echo       - name: hname >> rollout.yaml
+    echo         image: nginx:1.16.0 >> rollout.yaml
+    echo         ports: >> rollout.yaml
+    echo         - containerPort: 80 >> rollout.yaml
+    ```
+
+- rollout.yaml 파일에 정의된 리소스(Deployment) 생성
+
+    ```
+    kubectl apply -f rollout.yaml
+    
+    deployment.apps/dpy-hname configured
+    ```
+
+- Kubernetes 클러스터에 생성된 모든 Deployment 리소스 조회
+
+    ```
+    kubectl get deploy
+
+    NAME        READY   UP-TO-DATE   AVAILABLE   AGE
+    dpy-nginx   1/1     1            1           3s
+    ```
+
+
+- dpy-nginx라는 Deployment의 롤아웃(업데이트) 상태를 확인
+
+    ```
+    kubectl rollout status deployment dpy-nginx
+    
+    deployment "dpy-nginx" successfully rolled out
+    ```
+    - 롤아웃이 성공적이었음
+- dpy-nginx Deployment의 이전 배포(Revision) 기록을 확인
+
+    ```
+    kubectl rollout history deployment dpy-nginx
+
+    deployment.apps/dpy-nginx
+    REVISION  CHANGE-CAUSE
+    1         <none>
+    ```
+
+<br>
+<br>
+
+
+
+
+## rollout.yaml 내용 변경
+
+- image: nginx:1.16.0을 image: nginx:1.17.0으로 변경
+    ```
+    apiVersion: apps/v1 
+    kind: Deployment 
+    metadata: 
+    name: dpy-nginx 
+    labels: 
+        app: hostname 
+    spec: 
+    replicas: 1 
+    selector: 
+        matchLabels: 
+        app: hostname 
+    template: 
+        metadata: 
+        labels: 
+            app: hostname 
+        spec: 
+        containers: 
+        - name: hname 
+            image: nginx:1.17.0 
+            ports: 
+            - containerPort: 80 
+
+    ```
+
+- 리소스 업데이트
+
+    ```
+    kubectl apply -f rollout.yaml
+    
+    deployment.apps/dpy-nginx configured
+    ```
+
+- status 및 history 조회
+
+    ```
+    kubectl rollout status deployment dpy-nginx
+
+    deployment "dpy-nginx" successfully rolled out
+    ```
+
+
+    ```
+    kubectl rollout history deployment dpy-nginx
+    
+    deployment.apps/dpy-nginx
+    REVISION  CHANGE-CAUSE
+    1         <none>
+    2         kubectl apply --filename=rollout.yaml --record=true
+    ```
+
+    - 디플로이먼트 상태가 변경된 것을 rollout history로 확인
+
+<br>
+<br>
+
+
+
+## Flag --record has been deprecated, --record will be removed in the future
+
+- --record 플래그가 Kubernetes에서 Deprecated(사용 중단 예정) 상태로 지정
+- 미래의 Kubernetes 버전에서는 제거될 예정
+
+<br>
+<br>
+
+
+
+## kubectl annotate
+
+- 다시 적용
+
+    - 순서
+
+        - kubectl delete deployment dpy-nginx
+        - rollout.yaml 파일에 지정된 nginx 이미지의 버전은 다시 1.16.0 으로 (파일 수정)
+        - kubectl apply -f rollout.yaml
+        - kubectl set image deployment dpy-nginx nginx=nginx:1.17.0
+        - kubectl annotate deployment dpy-nginx kubernetes.io/change-cause=""
+        - kubectl rollout history deployment dpy-nginx
+
+
+- 디플로이먼트 업데이트
+
+    ```
+    kubectl apply -f rollout.yaml
+    
+    deployment.apps/dpy-nginx configured
+    ```
+
+- 디플로이먼트 조회
+
+    ```
+    kubectl get deploy
+    
+    NAME        READY   UP-TO-DATE   AVAILABLE   AGE
+    dpy-nginx   1/1     1            1           11m
+    ```
+
+- 서비스 생성
+
+    ```
+    kubectl apply -f service.yaml
+
+    service/svc-nginx created
+    ```
+
+- 가동중인 서비스 목록 조회
+
+    ```
+    kubectl get svc
+    
+    NAME         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
+    svc-nginx    NodePort    10.108.242.48   <none>        80:30000/TCP   55s
+    ```
+
+- 로컬 호스트의 30000 포트에서 실행 중인 서비스의 HTTP 헤더 정보만 조회하는 명령어
+
+    ```
+    curl -I --silent localhost:30000
+
+    HTTP/1.1 200 OK
+    Server: nginx/1.16.0
+    Date: Fri, 29 Nov 2024 19:08:34 GMT
+    Content-Type: text/html
+    Content-Length: 612
+    Last-Modified: Tue, 23 Apr 2019 10:18:21 GMT
+    Connection: keep-alive
+    ETag: "5cbee66d-264"
+    Accept-Ranges: bytes
+    ```
+
+- 이미지 버전을 1.17.0 으로 변경
+
+    ```
+    kubectl set image deployment dpy-nginx hname=nginx:1.17.0
+    
+    deployment.apps/dpy-nginx image updated
+    ```
+
+- Deployment 리소스에 주석(annotation)을 추가하는 명령어
+
+    ```
+    kubectl annotate deployment dpy-nginx kubernetes.id/change-cause="update nginx image from 1.16.0 to 1.17.0"
+    
+    deployment.apps/dpy-nginx annotated
+    ```
+
+- rollout history 조회
+
+    ```
+    kubectl rollout history deployment dpy-nginx
+
+    deployment.apps/dpy-nginx
+    REVISION  CHANGE-CAUSE
+    3         <none>
+    4         kubectl apply --filename=rollout.yaml --record=true
+    ```
+
+<br>
+<br>
+
+## 의도적으로 존재하지 않는 태그를 붙여서 업데이트
