@@ -99,6 +99,3 @@
     ![alt text](image-15.png)
 
     - 원격 원본 저장소에서 fetch후, 로컬 저장소에 pull하면 됨
-
-
-## Pull Request
