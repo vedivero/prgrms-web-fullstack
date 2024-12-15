@@ -16,7 +16,7 @@
 
         ![alt text](image.png)
 
-## Contribute
+## Contribute 방법 1
 
 - Contributors.md
 
@@ -83,3 +83,25 @@
     - Merge 확인
 
         ![alt text](image-4.png)
+
+
+## Contribute 방법 2
+
+- 깃허브에서 브랜치 생성
+
+    ![alt text](image.png)
+    ![alt text](image-1.png)
+
+- edit file
+
+    ![alt text](image-2.png)
+
+- 내용 작성 및 커밋
+
+    ![alt text](image-3.png)
+    ![alt text](image-4.png)
+    ![alt text](image-5.png)
+
+- 병합 완료
+
+    ![alt text](image-6.png)
