@@ -65,3 +65,40 @@
 
 
         ![alt text](image-14.png)
+
+
+
+
+
+---
+<br>
+<br>
+<br>
+<br>
+
+# 모던 자바스크립트 튜토리얼 기여
+
+모던 자바스크립트 튜토리얼이란 ?
+- 원문 페이지
+    - https://javascript.info/
+- 한국어 페이지
+    - https://ko.javascript.info/
+- 기여 프로젝트를 구성한 컨트리뷰터
+    - https://violetboralee.medium.com/%EB%AA%A8%EB%8D%98-javascript-%ED%8A%9C%ED%86%A0%EB%A6%AC%EC%96%BC-%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8-4338630fef35
+- 기여 방법
+    - https://github.com/javascript-tutorial/ko.javascript.info/blob/master/CONTRIBUTING.md
+
+
+## 로컬 서버 세팅하기
+
+- https://github.com/javascript-tutorial/ko.javascript.info/wiki/%EB%A1%9C%EC%BB%AC-%EC%84%9C%EB%B2%84-%EC%84%B8%ED%8C%85%ED%95%98%EA%B8%B0
+
+
+- 원본 리포지토리에서 내려 받아야 할 것이 있으면 활성화 됨
+
+    ![alt text](image-15.png)
+
+    - 원격 원본 저장소에서 fetch후, 로컬 저장소에 pull하면 됨
+
+
+## Pull Request
